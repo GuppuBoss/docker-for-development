@@ -1,0 +1,37 @@
+version: '3.5'
+
+services:
+  mongodb_win:
+    image: mongo:4.2.7
+    container_name: mongodb_win
+    ports:
+      - '47017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: secret
+      MONGO_INITDB_DATABASE: myProject
+      MONGO_USERNAME: root
+      MONGO_PASSWORD: secret
+    volumes:
+      # - ./data:/data/db # gives mounting error when running from windows may be it will work on ubuntu
+      - /data/db
+      - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
+    networks:
+      - dev
+  mongo_seed:
+    container_name: mongo_seed
+    build: ./mongo-seed
+    networks:
+      - dev
+    depends_on:
+      - mongodb_win
+  cache:
+    image: redis:alpine
+    container_name: redis-windows
+    ports:
+      - '6379:7379'
+    #command: ['--requirepass "secret"']    
+networks:
+  dev:
+    name: dev
+    driver: bridge
